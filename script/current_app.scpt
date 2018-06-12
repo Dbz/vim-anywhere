@@ -5,5 +5,5 @@
 -- Get the current application's name
 
 tell application "System Events"
-  copy (name of application processes whose frontmost is true) to stdout
+  copy (unix id of application processes whose frontmost is true) to stdout
 end tell

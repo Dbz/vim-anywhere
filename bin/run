@@ -66,19 +66,15 @@ elif [[ $OSTYPE == "darwin"* ]]; then
     "Please reinstall vim-anywhere."
 
   app=$(osascript $AW_PATH/script/current_app.scpt)
-  mvim_path=$(cat $AW_PATH/.path)
+  frontmost_app="~/.vim-anywhere/script/set_frontmost_app.scpt"
 
-  require_file_exists $mvim_path \
-    "mvim must have been moved or uninstalled.\nPlease make sure it is" \
-    "available in your path and then reinstall vim-anywhere."
-
-  $mvim_path $VIM_OPTS $TMPFILE
-  # todo, fix invalid file
-
-  # NOTE
-  # Here we set LANG explicitly to be UTF-8 compatible when copying text. The only way that was explicitly
-  # setting this to en_US.UTF-8. This may eventually cause issues with other languages. If so, just remove
-  # the LANG setting.
-  LANG=en_US.UTF-8 pbcopy < $TMPFILE
-  osascript -e "activate application \"$app\""
+  osascript <<EOF
+    tell application "iTerm"
+      create window with default profile
+      tell current session of current window
+        activate
+        write text "vim -c 'execute \"au VimLeave * !pbcopy < \" . expand(\"%\") | execute \"au VimLeave * !osascript $frontmost_app $app\"' $TMPFILE"
+      end tell
+    end tell
+EOF
 fi
